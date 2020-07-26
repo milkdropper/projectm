@@ -4,6 +4,7 @@
 #include "Common.hpp"
 #include "KeyHandler.hpp"
 #include "TextureManager.hpp"
+#include "MilkdropWaveform.hpp"
 #include <iostream>
 #include <algorithm>
 #include <sys/stat.h>
@@ -347,12 +348,31 @@ void Renderer::RenderItems(const Pipeline& pipeline, const PipelineContext& pipe
 	renderContext.textureManager = textureManager;
 	renderContext.beatDetect = beatDetect;
 
-	for (std::vector<RenderItem*>::const_iterator pos = pipeline.drawables.begin(); pos != pipeline.drawables.end(); ++
-	     pos)
+	for (std::vector<RenderItem*>::const_iterator pos = pipeline.drawables.begin(); pos != pipeline.drawables.end(); ++pos)
 	{
 		if (*pos != nullptr)
-		{
 			(*pos)->Draw(renderContext);
+	}
+	
+	// If we have touch waveforms, render them.
+	if (waveformList.size() >= 1) {
+		RenderTouch(pipeline,pipelineContext);
+	}
+}
+
+void Renderer::RenderTouch(const Pipeline& pipeline, const PipelineContext& pipelineContext)
+{
+	Pipeline pipelineTouch;
+	MilkdropWaveform wave;
+	for(int x = 0; x < waveformList.size(); x++){
+		pipelineTouch.drawables.push_back(&wave);
+		wave = waveformList[x];
+
+		// Render waveform
+		for (std::vector<RenderItem*>::const_iterator pos = pipelineTouch.drawables.begin(); pos != pipelineTouch.drawables.end(); ++pos)
+		{
+			if (*pos != nullptr)
+				(*pos)->Draw(renderContext);
 		}
 	}
 }
@@ -388,6 +408,7 @@ void Renderer::Pass2(const Pipeline& pipeline, const PipelineContext& pipelineCo
 	{
 		CompositeOutput(pipeline, pipelineContext);
 	}
+
 
 	// When console refreshes, there is a chance the preset has been changed by the user
 	refreshConsole();
@@ -633,6 +654,121 @@ bool Renderer::timeCheck(const milliseconds currentTime, const milliseconds last
 	}
 }
 
+// Render a waveform when a touch event is triggered.
+void Renderer::touch(float x, float y, int pressure, int type = 0)
+{
+	// if we left clicked in the approximate position of a waveform, then it doens't make sense to add something on top. Instead give the option to drag the existing waveform.
+	// For lines we don't worry about the x axis.
+	for (int i = 0; i < waveformList.size(); i++) {
+		if (waveformList[i].x > (x-0.05f) && waveformList[i].x < (x+0.05f) && ((waveformList[i].y > (y-0.05f) && waveformList[i].y < (y+0.05f)) || waveformList[i].mode == Line || waveformList[i].mode == DoubleLine || waveformList[i].mode == DerivativeLine ))
+		{
+			touchDrag(x, y, pressure);
+			return;
+		}
+	}
+
+	touchx = x;
+	touchy = y;
+	touchp = pressure;
+	// If we touched randomly, then assign type to a random number between 0 and 8
+	if (type == 0) {
+		type = (rand() % 9) + 1;
+	}
+	touchtype = type;
+
+	// Randomly select colours on touch
+	touchr = ((double)rand() / (RAND_MAX));
+	touchb = ((double)rand() / (RAND_MAX));
+	touchg = ((double)rand() / (RAND_MAX));
+	toucha = ((double)rand() / (RAND_MAX));
+
+	// Create a waveform. The touch x / y was based on where you clicked (approximately).
+	MilkdropWaveform wave;
+	switch (touchtype)
+	{
+		case 1:
+			wave.mode = Circle;
+			break;
+		/* Radial Blob flies off and doesn't track your mouse.
+		case 2:
+			wave.mode = RadialBlob;
+			break;
+			*/
+		case 3:
+			wave.mode = Blob2;
+			break;
+		case 4:
+			wave.mode = Blob3;
+			break;
+		case 5:
+			wave.mode = DerivativeLine;
+			break;
+		case 6:
+			wave.mode = Blob5;
+			break;
+		/* Disabling lines because they are not intuitive 
+		case 7:
+			wave.mode = Line;
+			break;
+		case 8:
+			wave.mode = DoubleLine;
+			break;
+		*/
+		default:
+			wave.mode = Circle;
+	}
+	 
+	wave.additive = true;
+	wave.modOpacityEnd = 1.1;
+	wave.modOpacityStart = 0.0;
+	wave.maximizeColors = true;
+	wave.modulateAlphaByVolume = false;
+
+	wave.r = touchr;
+	wave.g = touchg;
+	wave.b = touchb;
+	wave.a = toucha;
+    wave.x = touchx;
+	wave.y = touchy;
+
+	// add new waveform to waveformTouchList
+	waveformList.push_back(wave);
+}
+
+// Move a waveform when dragging X, Y, and Pressure can change. We also extend the counters so it will stay on screen for as long as you click and drag.
+void Renderer::touchDrag(float x, float y, int pressure)
+{
+	// if we left clicked & held in the approximate position of a waveform, snap to it and adjust x / y to simulate dragging.
+	// For lines we don't worry about the x axis.
+	for (int i = 0; i < waveformList.size(); i++) {
+		if (waveformList[i].x > (x-0.05f) && waveformList[i].x < (x+0.05f) && ((waveformList[i].y > (y-0.05f) && waveformList[i].y < (y+0.05f)) || waveformList[i].mode == Line || waveformList[i].mode == DoubleLine || waveformList[i].mode == DerivativeLine ))
+		{
+			waveformList[i].x = x;
+			waveformList[i].y = y;
+		}
+	}
+	touchp = pressure;
+}
+
+// Remove waveform at X Y
+void Renderer::touchDestroy(float x, float y)
+{
+	// if we right clicked approximately on the position of the waveform, then remove it from the waveform list.
+	// For lines we don't worry about the x axis.
+	for (int i = 0; i < waveformList.size(); i++) {
+		if (waveformList[i].x > (x-0.05f) && waveformList[i].x < (x+0.05f) && ((waveformList[i].y > (y-0.05f) && waveformList[i].y < (y+0.05f)) || waveformList[i].mode == Line || waveformList[i].mode == DoubleLine || waveformList[i].mode == DerivativeLine ))
+		{
+			waveformList.erase(waveformList.begin() + i);
+		}
+	}
+}
+
+// Remove all waveforms
+void Renderer::touchDestroyAll()
+{
+	waveformList.clear();
+}
+
 void Renderer::setToastMessage(const std::string& theValue)
 {
 	// Initialize counters
@@ -763,8 +899,7 @@ void Renderer::CompositeOutput(const Pipeline& pipeline, const PipelineContext& 
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (std::vector<RenderItem*>::const_iterator pos = pipeline.compositeDrawables.begin(); pos
-	     != pipeline.compositeDrawables.end(); ++pos)
+	for (std::vector<RenderItem*>::const_iterator pos = pipeline.compositeDrawables.begin(); pos!= pipeline.compositeDrawables.end(); ++pos)
 		(*pos)->Draw(renderContext);
 
 	glBindTexture(GL_TEXTURE_2D, 0);

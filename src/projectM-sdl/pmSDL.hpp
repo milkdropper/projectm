@@ -89,7 +89,8 @@ public:
 
     bool done;
     bool wasapi = false; // Used to track if wasapi is currently active. This bool will allow us to run a WASAPI app and still toggle to microphone inputs.
-    bool fakeAudio = false; // Used to track fake audio, so we can turn it off and on.
+    bool fakeAudio = false;
+    bool mouseDown = false;
     projectMSDL(Settings settings, int flags);
     projectMSDL(std::string config_file, int flags);
     void init(SDL_Window *window, SDL_GLContext *glCtx, const bool renderToTexture = false);
@@ -102,10 +103,15 @@ public:
 	void nextMonitor();
     void toggleFullScreen();
     void resize(unsigned int width, unsigned int height);
+    void touch(float x, float y, int pressure, int touchtype = 0);
+    void touchDrag(float x, float y, int pressure);
+    void touchDestroy(float x, float y);
+    void touchDestroyAll();
     void setHelpText(const std::string& theValue);
     void renderFrame();
     void pollEvent();
     void maximize();
+    bool keymod = false;
     std::string getActivePresetName();
     void addFakePCM();
     
