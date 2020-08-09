@@ -1028,6 +1028,8 @@
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
 					"DATADIR_PATH=\\\"\".\"\\\"",
+                    "USE_TEXT_MENU=1",
+					"HAVE_GLUT_GLUT_H=1",
 					"$(inherited)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1046,6 +1048,8 @@
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DATADIR_PATH=\\\"\"/usr/local/share/projectM\"\\\"",
+                    "USE_TEXT_MENU=1",
+					"HAVE_GLUT_GLUT_H=1",
 					"$(inherited)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
