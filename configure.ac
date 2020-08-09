@@ -79,7 +79,6 @@ AC_CONFIG_FILES([
   src/projectM-test/Makefile
 ])
 
-
 # SDL
 AC_ARG_ENABLE([sdl], AS_HELP_STRING([--enable-sdl], [Build SDL2 application]), [], [enable_sdl=check])
 AS_IF([test "$enable_sdl" != "no"], [
@@ -101,6 +100,26 @@ AS_IF([test "$enable_sdl" != "no"], [
     ])
 ])
 
+# TEXT MENUS (manually enable for binaries other than SDL.)
+AC_ARG_ENABLE([textmenu], AS_HELP_STRING([--enable-textmenu], [Include text menu support in renderer]), [], [enable_textmenu=no])
+
+# SDL defaults to enable text menus.
+AS_IF([test "$enable_sdl" != "no"], [
+    enable_textmenu=yes
+    AC_DEFINE([USE_TEXT_MENU], [1], [Include text menu support in renderer])
+])
+
+# TEXT MENUS
+AS_IF([test "$enable_textmenu" != "no"], [
+  AC_DEFINE([USE_TEXT_MENU], [1], [Include text menu support in renderer])
+  case $host_os in
+    darwin*)
+    # OSX needs GLUT headers (alternatively we )
+    m4_include([m4/autoconf-archive/ax_check_glut.m4])
+    AX_CHECK_GLUT
+    ;;
+  esac
+])
 
 # Threading
 AC_ARG_ENABLE([threading],
@@ -254,13 +273,14 @@ cxxflags:               ${CXXFLAGS}
 libs:                   ${LIBS}
 ldflags:                ${LDFLAGS}
 
-- - -
+Options:
+Threading:              ${enable_threading}
+Render text menu:       ${enable_textmenu}
 
 Applications:
 =====
 
 libprojectM:            yes
-Threading:              ${enable_threading}
 SDL:                    ${enable_sdl}
 Qt:                     ${enable_qt}
 Pulseaudio:             ${enable_pulseaudio}
