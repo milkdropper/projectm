@@ -472,7 +472,7 @@ int MilkdropPreset::readIn(std::istream & fs) {
 
   if (Parser::parse_preset_name(fs, tmp_name) < 0)
   {
-    std::cerr <<  "[Preset::readIn] loading of preset name failed" << std::endl;
+    std::cerr <<  "[Preset::readIn] loading of preset name failed. This typically means the preset is missing [preset00] and may be corrupt or a partial preset..." << std::endl;
     return PROJECTM_ERROR;
   }
 

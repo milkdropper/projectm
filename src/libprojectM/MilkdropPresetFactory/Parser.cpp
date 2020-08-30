@@ -297,12 +297,15 @@ int Parser::parse_top_comment(std::istream &  fs)
 
   char string[MAX_TOKEN_SIZE];
   token_t token;
-
-  /* Process tokens until left bracket is found */
-  while ((token = parseToken(fs, string)) != tLBr)
+  int i;
+  /* Process tokens until left bracket is found, limited to MAX_TOKEN_SIZE */
+  for (i = 0; i < MAX_TOKEN_SIZE; i++)
   {
-    if (token == tEOF)
-      return PROJECTM_PARSE_ERROR;
+      token = parseToken(fs, string);
+      if (token == tLBr) // found left bracket (the required comment a/k/a presetname).
+          return PROJECTM_SUCCESS;
+      if (token == tEOF) // if at EOF
+          return PROJECTM_PARSE_ERROR;
   }
 
   /* Done, return success */
