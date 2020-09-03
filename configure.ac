@@ -116,9 +116,10 @@ AS_IF([test "$enable_textmenu" != "no"], [
   AC_DEFINE([USE_TEXT_MENU], [1], [Include text menu support in renderer])
   case $host_os in
     darwin*)
-    # OSX needs GLUT headers
-    m4_include([m4/autoconf-archive/ax_check_glut.m4])
-    AX_CHECK_GLUT
+    # OSX needs GLUT headers - they are preinstalled, so no need to check - https://cis.gvsu.edu/~wolffe/courses/cs367/docs/developingRunningOGL.html
+    # m4_include([m4/autoconf-archive/ax_check_glut.m4])
+    # AX_CHECK_GLUT
+    AC_DEFINE([HAVE_GLUT_GLUT_H], [1], [HAVE_GLUT_GLUT_H])
     ;;
   esac
 ])

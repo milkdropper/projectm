@@ -20,6 +20,12 @@ using namespace std::chrono;
 
 #ifdef USE_TEXT_MENU
 
+#if defined(HAVE_GL_GLUT_H)
+# include <GL/glut.h>
+#elif defined(HAVE_GLUT_GLUT_H)
+# include <GLUT/glut.h>
+#endi
+
 #define GLT_IMPLEMENTATION
 #define GLT_DEBUG_PRINT
 #include "gltext.h"
