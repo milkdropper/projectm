@@ -153,7 +153,6 @@ int projectMSDL::openAudioInput() {
 #endif
     
     // get audio input device
-    unsigned int i;
     NumAudioDevices = SDL_GetNumAudioDevices(true);  // capture, please
 
     CurAudioDevice = 0;
