@@ -24,7 +24,7 @@ using namespace std::chrono;
 # include <GL/glut.h>
 #elif defined(HAVE_GLUT_GLUT_H)
 # include <GLUT/glut.h>
-#endi
+#endif
 
 #define GLT_IMPLEMENTATION
 #define GLT_DEBUG_PRINT
