@@ -183,16 +183,19 @@ Renderer::Renderer(int width, int height, int gx, int gy, BeatDetect* _beatDetec
 	this->drawtitle = 0;
 
 	// This is the default help menu for applications that have not defined any custom menu.
-	const char* defaultHelpMenu = "\n"
-		"F1: This help menu""\n"
-		"F3: Show preset name""\n"
-		"F5: Show FPS""\n"
+	std::string modKey = "CTRL";
+
+#if __APPLE_
+	modKey = "CMD";
+#endif
+
+	std::string defaultHelpMenu = "\n"
 		"L: Lock/Unlock Preset""\n"
 		"R: Random preset""\n"
-		"N/P: [N]ext+ or [P]revious-reset""\n"
-		"M: Preset Menu (Arrow Up/Down & Page Up/Down to Navigate)""\n"
-		"Arrow Up/Down: Increase or Decrease Beat Sensitivity""\n"
-		"CTRL-F: Fullscreen";
+		"N/P: Next or Previous preset""\n"
+		"Arrow Up/Down: Increase or Decrease Beat Sensitivity""\n" +
+		modKey + "+F: Fullscreen" +
+		modKey + "+Q: Quit";
 
 	this->setHelpText(defaultHelpMenu);
 

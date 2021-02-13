@@ -144,29 +144,29 @@ HRESULT get_default_device(IMMDevice **ppMMDevice) {
 
 int main(int argc, char *argv[]) {
 #ifndef WIN32
-srand((int)(time(NULL)));
+	srand((int)(time(NULL)));
 #endif
 
 #ifdef WASAPI_LOOPBACK
 	HRESULT hr;
 
-    hr = CoInitialize(NULL);
-    if (FAILED(hr)) {
-        ERR(L"CoInitialize failed: hr = 0x%08x", hr);
-    }
+	hr = CoInitialize(NULL);
+	if (FAILED(hr)) {
+		ERR(L"CoInitialize failed: hr = 0x%08x", hr);
+	}
 
 
 	IMMDevice *pMMDevice(NULL);
-    // open default device if not specified
-    if (NULL == pMMDevice) {
-        hr = get_default_device(&pMMDevice);
-        if (FAILED(hr)) {
-            return hr;
-        }
-    }
+	// open default device if not specified
+	if (NULL == pMMDevice) {
+		hr = get_default_device(&pMMDevice);
+		if (FAILED(hr)) {
+			return hr;
+		}
+	}
 
 	bool bInt16 = false;
-    UINT32 foo = 0;
+	UINT32 foo = 0;
 	PUINT32 pnFrames = &foo;
 
 	// activate an IAudioClient
@@ -232,7 +232,7 @@ srand((int)(time(NULL)));
 			return E_UNEXPECTED;
 		}
 	}
-        
+
 	UINT32 nBlockAlign = pwfx->nBlockAlign;
 	*pnFrames = 0;
 
@@ -268,57 +268,57 @@ srand((int)(time(NULL)));
 		ERR(L"pAudioClient->Start error");
 		return hr;
 	}
-	
+
 	bool bDone = false;
 	bool bFirstPacket = true;
-    UINT32 nPasses = 0;
+	UINT32 nPasses = 0;
 
 #endif /** WASAPI_LOOPBACK */
 
 #if UNLOCK_FPS
-    setenv("vblank_mode", "0", 1);
+	setenv("vblank_mode", "0", 1);
 #endif
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-    if (! SDL_VERSION_ATLEAST(2, 0, 5)) {
-        SDL_Log("SDL version 2.0.5 or greater is required. You have %i.%i.%i", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
-        return 1;
-    }
+	if (! SDL_VERSION_ATLEAST(2, 0, 5)) {
+		SDL_Log("SDL version 2.0.5 or greater is required. You have %i.%i.%i", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+		return 1;
+	}
 
-    // default window size to usable bounds (e.g. minus menubar and dock)
-    SDL_Rect initialWindowBounds;
+	// default window size to usable bounds (e.g. minus menubar and dock)
+	SDL_Rect initialWindowBounds;
 #if SDL_VERSION_ATLEAST(2, 0, 5)
-    // new and better
-    SDL_GetDisplayUsableBounds(0, &initialWindowBounds);
+	// new and better
+	SDL_GetDisplayUsableBounds(0, &initialWindowBounds);
 #else
-    SDL_GetDisplayBounds(0, &initialWindowBounds);
+	SDL_GetDisplayBounds(0, &initialWindowBounds);
 #endif
-    int width = initialWindowBounds.w;
-    int height = initialWindowBounds.h;
+	int width = initialWindowBounds.w;
+	int height = initialWindowBounds.h;
 
 #ifdef USE_GLES
-    // use GLES 2.0 (this may need adjusting)
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	// use GLES 2.0 (this may need adjusting)
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
 #else
 	// Disabling compatibility profile
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 #endif
 
-    
+
     SDL_Window *win = SDL_CreateWindow("projectM", 0, 0, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     
     SDL_GL_GetDrawableSize(win,&width,&height);
-    
+
 #if STEREOSCOPIC_SBS
 
 	// enable stereo
-	if (SDL_GL_SetAttribute(SDL_GL_STEREO, 1) == 0) 
+	if (SDL_GL_SetAttribute(SDL_GL_STEREO, 1) == 0)
 	{
 		SDL_Log("SDL_GL_STEREO: true");
 	}
@@ -333,34 +333,34 @@ srand((int)(time(NULL)));
 	SDL_GLContext glCtx = SDL_GL_CreateContext(win);
 
 
-    SDL_Log("GL_VERSION: %s", glGetString(GL_VERSION));
-    SDL_Log("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    SDL_Log("GL_VENDOR: %s", glGetString(GL_VENDOR));
+	SDL_Log("GL_VERSION: %s", glGetString(GL_VERSION));
+	SDL_Log("GL_SHADING_LANGUAGE_VERSION: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	SDL_Log("GL_VENDOR: %s", glGetString(GL_VENDOR));
 
-    SDL_SetWindowTitle(win, "projectM Visualizer");
-    
-    SDL_GL_MakeCurrent(win, glCtx);  // associate GL context with main window
-    int avsync = SDL_GL_SetSwapInterval(-1); // try to enable adaptive vsync
-    if (avsync == -1) { // adaptive vsync not supported
-        SDL_GL_SetSwapInterval(1); // enable updates synchronized with vertical retrace
-    }
+	SDL_SetWindowTitle(win, "projectM Visualizer");
 
-    
-    projectMSDL *app;
-    
-    std::string base_path = DATADIR_PATH;
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using data directory: %s\n", base_path.c_str());
+	SDL_GL_MakeCurrent(win, glCtx);  // associate GL context with main window
+	int avsync = SDL_GL_SetSwapInterval(-1); // try to enable adaptive vsync
+	if (avsync == -1) { // adaptive vsync not supported
+		SDL_GL_SetSwapInterval(1); // enable updates synchronized with vertical retrace
+	}
 
-    // load configuration file
-    std::string configFilePath = getConfigFilePath(base_path);
 
-    if (! configFilePath.empty()) {
-        // found config file, use it
-        app = new projectMSDL(configFilePath, 0);
-        SDL_Log("Using config from %s", configFilePath.c_str());
-    } else {
-        base_path = SDL_GetBasePath();
-        SDL_Log("Config file not found, using built-in settings. Data directory=%s\n", base_path.c_str());
+	projectMSDL *app;
+
+	std::string base_path = DATADIR_PATH;
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using data directory: %s\n", base_path.c_str());
+
+	// load configuration file
+	std::string configFilePath = getConfigFilePath(base_path);
+
+	if (! configFilePath.empty()) {
+		// found config file, use it
+		app = new projectMSDL(configFilePath, 0);
+		SDL_Log("Using config from %s", configFilePath.c_str());
+	} else {
+		base_path = SDL_GetBasePath();
+		SDL_Log("Config file not found, using built-in settings. Data directory=%s\n", base_path.c_str());
 
 		// Get max refresh rate from attached displays to use as built-in max FPS.
 		int i = 0;
@@ -375,67 +375,74 @@ srand((int)(time(NULL)));
 		}
 		if (maxRefreshRate <= 60) maxRefreshRate = 60;
 
-        float heightWidthRatio = (float)height / (float)width;
-        projectM::Settings settings;
-        settings.windowWidth = width;
-        settings.windowHeight = height;
-        settings.meshX = 128;
-        settings.meshY = settings.meshX * heightWidthRatio;
+		float heightWidthRatio = (float)height / (float)width;
+		projectM::Settings settings;
+		settings.windowWidth = width;
+		settings.windowHeight = height;
+		settings.meshX = 128;
+		settings.meshY = settings.meshX * heightWidthRatio;
 		settings.fps = maxRefreshRate;
-        settings.smoothPresetDuration = 3; // seconds
-        settings.presetDuration = 22; // seconds
+		settings.smoothPresetDuration = 3; // seconds
+		settings.presetDuration = 22; // seconds
 		settings.hardcutEnabled = true;
 		settings.hardcutDuration = 60;
 		settings.hardcutSensitivity = 1.0;
-        settings.beatSensitivity = 1.0;
-        settings.aspectCorrection = 1;
-        settings.shuffleEnabled = 1;
-        settings.softCutRatingsEnabled = 1; // ???
-        // get path to our app, use CWD or resource dir for presets/fonts/etc
-        settings.presetURL = base_path + "presets";
-//        settings.presetURL = base_path + "presets/presets_shader_test";
-        settings.menuFontURL = base_path + "fonts/Vera.ttf";
-        settings.titleFontURL = base_path + "fonts/Vera.ttf";
-        // init with settings
-        app = new projectMSDL(settings, 0);
-    }
+		settings.beatSensitivity = 1.0;
+		settings.aspectCorrection = 1;
+		settings.shuffleEnabled = 1;
+		settings.softCutRatingsEnabled = 1; // ???
+		// get path to our app, use CWD or resource dir for presets/fonts/etc
+		settings.presetURL = base_path + "presets";
+		//        settings.presetURL = base_path + "presets/presets_shader_test";
+		settings.menuFontURL = base_path + "fonts/Vera.ttf";
+		settings.titleFontURL = base_path + "fonts/Vera.ttf";
+		// init with settings
+		app = new projectMSDL(settings, 0);
+	}
 
-    // If our config or hard-coded settings create a resolution smaller than the monitors, then resize the SDL window to match.
-    if (height > app->getWindowHeight() || width > app->getWindowWidth()) {
+	// If our config or hard-coded settings create a resolution smaller than the monitors, then resize the SDL window to match.
+	if (height > app->getWindowHeight() || width > app->getWindowWidth()) {
         SDL_SetWindowSize(win, app->getWindowWidth(),app->getWindowHeight());
         SDL_SetWindowPosition(win, (width / 2)-(app->getWindowWidth()/2), (height / 2)-(app->getWindowHeight()/2));
     } else if (height < app->getWindowHeight() || width < app->getWindowWidth()) {
-        // If our config is larger than our monitors resolution then reduce it.
-        SDL_SetWindowSize(win, width, height);
-        SDL_SetWindowPosition(win, 0, 0);
-    }
+		// If our config is larger than our monitors resolution then reduce it.
+		SDL_SetWindowSize(win, width, height);
+		SDL_SetWindowPosition(win, 0, 0);
+	}
 
-    // Create a help menu specific to SDL
-    std::string modKey = "CTRL";
+	// Create a help menu specific to SDL
+	std::string modKey = "CTRL";
 
 #if __APPLE_
-modKey = "CMD";
+	modKey = "CMD";
 #endif
 
-    std::string sdlHelpMenu = "\n"
+	// This is the SDL specific menu that will be passed to the renderer.
+	std::string sdlHelpMenu = "\n"
 		"F1: This help menu""\n"
 		"F3: Show preset name""\n"
 		"F4: Show details and statistics""\n"
 		"F5: Show FPS""\n"
+		"M: Preset Menu (Arrow Up/Down & Page Up/Down to Navigate)""\n"
 		"L or SPACE: Lock/Unlock Preset""\n"
 		"R: Random preset""\n"
-		"N: Next preset""\n"
-		"P: Previous preset""\n"
-		"UP: Increase Beat Sensitivity""\n"
-		"DOWN: Decrease Beat Sensitivity""\n"
-		"Left Click: Drop Random Waveform on Screen""\n"
+		"N/P: Next or Previous preset""\n"
+		"Arrow Up/Down: Increase or Decrease Beat Sensitivity""\n";
+
+#ifdef PROJECTM_TOUCH_ENABLED
+	sdlHelpMenu = sdlHelpMenu + "Left Click: Drop Random Waveform on Screen""\n"
 		"Right Click: Remove Random Waveform""\n" +
-		modKey + "+Right Click: Remove All Random Waveforms""\n" +
-		modKey + "+I: Audio Input (listen to next device)""\n" +
-		modKey + "+M: Change Monitor""\n" +
-		modKey + "+S: Stretch Monitors""\n" +
-		modKey + "+F: Fullscreen""\n" +
-		modKey + "+Q: Quit";
+		modKey + "+Right Click: Remove All Random Waveforms""\n";
+#endif
+
+	sdlHelpMenu = sdlHelpMenu + modKey + "+I: Audio Input (listen to next device)""\n";
+	if (SDL_GetNumVideoDisplays() >= 2) {
+		sdlHelpMenu = sdlHelpMenu + modKey + "+M: Change Monitor""\n" +
+		modKey + "+S: Stretch Monitors""\n";
+	}
+
+	sdlHelpMenu = sdlHelpMenu + modKey + "+F: Fullscreen""\n" +
+	modKey + "+Q: Quit";
     app->setHelpText(sdlHelpMenu.c_str());
     app->init(win, &glCtx);
 
